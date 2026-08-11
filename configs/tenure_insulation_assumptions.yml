@@ -1,0 +1,869 @@
+# thermal-counterfactual-gb — assumption registry
+#
+# Every value below carries an evidentiary status, per PROJECT.md Section 8.6
+# (Assumptions Ledger):
+#   GROUNDED        — directly cited to a primary source
+#   PROVISIONAL     — a reasonable estimate, not yet independently sourced
+#   DELIBERATE      — a documented simplifying choice, not a claim about the world
+#   FORWARD-LOOKING — depends on something not yet true (a mechanism, a funding
+#                     trajectory) and is flagged as such
+#   OMITTED         — not modelled; must stay visible in outputs, never silently dropped
+#
+# Full sourcing and reasoning for every value: see PROJECT.md Section 8.
+# Configuration, Not Magic Numbers (PROJECT.md Section 5.6): notebooks should
+# read this file, not hardcode any of these numbers.
+
+archetype:
+  name: "pre-1919 solid-wall mid-terrace"
+  status: DELIBERATE
+  note: >
+    Single archetype chosen over a multi-archetype estate for MVP scope
+    (Golden Heuristic 2.2, the sledgehammer test).
+
+geometry:
+  status: PROVISIONAL
+  note: "Plausible dimensions for a narrow Victorian terrace; not sourced to a specific archetype study."
+  floor_area_m2: 70
+  storeys: 2
+  ceiling_height_m: 2.5
+  heated_volume_m3: 175          # 70 m2 x 2.5 m
+  exposed_facade_m2: 40          # front + rear only; party walls adiabatic
+  window_area_m2: 10             # 25% of exposed facade
+  opaque_wall_area_m2: 30        # 40 - 10
+  roof_area_m2: 35               # footprint
+  ground_floor_area_m2: 35       # footprint
+  party_walls: adiabatic
+
+thermal_capacity:
+  c_kwh_per_k: 10
+  status: PROVISIONAL
+  note: >
+    Asserted in the original project brief. Not yet independently sourced
+    against a pre-1919 brick archetype study — treat as a sensitivity range,
+    not a point value, once Week 1 code exists.
+
+envelope_states:
+
+  baseline:
+    wall_u_w_per_m2k: 1.7
+    wall_u_status: GROUNDED
+    wall_u_source: >
+      BRE (2014) In-situ measurements of wall U-values in English housing;
+      RdSAP v9.93 default (Nov 2017), standard-thickness (<330mm) solid brick.
+    roof_u_w_per_m2k: 2.3
+    roof_u_status: PROVISIONAL
+    floor_u_w_per_m2k: 1.5
+    floor_u_status: PROVISIONAL
+    window_u_w_per_m2k: 3.1
+    window_u_status: GROUNDED
+    window_u_source: >
+      RdSAP10 Table 24, pre-2002 wood/PVC frame, 6mm gap (Convention 3.12b's
+      conservative cell for unknown/unmeasurable gap width).
+    infiltration_ach: 1.0
+    infiltration_status: PROVISIONAL
+
+  swi_only:
+    wall_u_w_per_m2k: 0.30
+    wall_u_status: DELIBERATE
+    wall_u_note: "Representative external/internal wall insulation retrofit U-value."
+    roof_u_w_per_m2k: 2.3
+    floor_u_w_per_m2k: 1.5
+    window_u_w_per_m2k: 3.1
+    infiltration_ach: 1.0
+
+  epc_c_package:
+    wall_u_w_per_m2k: 0.30
+    roof_u_w_per_m2k: 0.16
+    floor_u_w_per_m2k: 0.25
+    window_u_w_per_m2k: 1.6
+    infiltration_ach: 0.8
+    status: DELIBERATE
+    note: "Representative EPC-C-consistent fabric package, not a specific product spec."
+
+  wall_insulation_type_assumption:
+    status: DELIBERATE
+    value: "EWI (external wall insulation)"
+    note: >
+      External review (see PROJECT.md Section 8.9) pointed out that the
+      swi_only/epc_c_package wall U-values are silent on whether the
+      insulation sits outside the original brick (EWI) or inside it (IWI) --
+      and that this changes which side of the insulation plane the brick's
+      thermal mass ends up on. EWI keeps the brick mass thermally coupled to
+      the indoor air (same side as before); IWI puts a new resistive layer
+      between the indoor air and the brick, substantially reducing how much
+      of that mass is usable as fast-response thermal storage. This project
+      assumes EWI throughout -- the more common assumption for large-scale
+      social-landlord retrofit programmes, since it avoids disrupting
+      occupied homes -- and does not separately model an IWI scenario.
+      Treat the swi_only/epc_c_package coastdown and 2R2C figures as
+      EWI-conditional; an IWI retrofit would likely show a smaller usable
+      capacitance and a shorter effective coastdown than reported here, a
+      flagged but not yet quantified sensitivity.
+
+  two_node_structural_sensitivity:
+    status: PROVISIONAL
+    note: >
+      Added in response to external review of the 1R1C model (PROJECT.md
+      Section 2.4-style adversarial check, applied to model structure rather
+      than parameters). See notebooks/01_archetype_physics.ipynb Section 7
+      and src/thermal_counterfactual_gb/physics.py
+      (two_node_conductances_w_per_k, simulate_2r2c_coastdown_hours).
+    internal_surface_resistances_m2k_per_w:
+      status: GROUNDED
+      source: "BS EN ISO 6946 -- standard internal surface resistances, already implicit inside every U-value in this project."
+      wall_horizontal_flow: 0.13
+      roof_upward_flow: 0.10
+      floor_downward_flow: 0.17
+    air_node_capacitance_fraction_sweep:
+      status: DELIBERATE
+      note: >
+        Fraction of total C=10 kWh/K assigned to the fast-responding air
+        node, swept rather than pinned to a point value because it is not
+        independently grounded for this archetype. Bare air alone is
+        ~0.06 kWh/K (under 1% of total C); the swept range (2-20%) is
+        already generous toward the "baseline survives the peak window"
+        conclusion, and even so, baseline and SWI-only do not reliably
+        survive across it -- see notebooks/01 Section 7 for the full result.
+      values: [0.02, 0.05, 0.10, 0.20]
+    headline_impact: >
+      1R1C coastdown-hours figures (5.0h baseline, 6.0h SWI-only, 18.7h
+      EPC-C, all WITH internal_gains_w applied) are UPPER BOUNDS, not
+      robust point estimates. Under the 2-node sensitivity WITH gains,
+      baseline never clears the 4-hour evening peak window across the
+      sweep (1.6-3.9h); SWI-only clears it only at the single most
+      generous end of the sweep (4.4h at f_air=0.20, still below 4h at
+      every other point tested) -- a genuine but narrow change from the
+      pre-gains result, where SWI-only never cleared it at all. EPC-C
+      clears it comfortably across the full sweep (11.4-14.3h WITH gains,
+      up from 6.7-9.8h without) -- gains make EPC-C's margin more robust,
+      not less, consistent with the mechanism: gains matter more,
+      proportionally, against a smaller loss (PROJECT.md Section 8.9).
+
+internal_gains_w:
+  status: PROVISIONAL
+  low: 300
+  point: 400
+  high: 500
+  source: >
+    Bottom-up cross-check against ASHRAE Fundamentals Handbook occupant
+    metabolic heat-output figures (seated/light-activity: ~115 W total heat
+    per person; light office-type activity: ~140 W) plus typical domestic
+    appliance/cooking/lighting casual gains (order ~100-150 W time-averaged,
+    per general building-physics convention, e.g. CIBSE Guide A Section 6
+    categories for occupants/lighting/equipment): 3 occupants x ~115 W
+    (~345 W) + ~100 W appliances/fridge/lighting/cooking time-averaged
+    (~445 W) brackets a 400 W point estimate. This is a bottom-up estimate
+    cross-checked against a standard per-person figure, not a single
+    directly-cited UK-domestic-specific table value -- tagged PROVISIONAL,
+    not GROUNDED, on that basis. Matches the 300-500 W range independently
+    proposed by external review.
+  note: >
+    Modelled as a CONSTANT gain (no diurnal occupancy/cooking schedule),
+    identical across all three envelope states -- same assumed household,
+    same appliances, regardless of fabric. Enters the physics as a heat
+    SOURCE netted against H*deltaT, never as a change to H itself
+    (PROJECT.md Section 2.3, no double-counting -- see
+    src/thermal_counterfactual_gb/physics.py, effective_outdoor_temp_c and
+    net_heating_power_kw). In the 2R2C model (notebooks/01 Section 7),
+    gains enter the AIR node specifically, since occupants/appliances heat
+    room air directly, not the structural mass.
+  omitted_from_this_figure: >
+    Solar gains (far more time-variable, orientation- and season-dependent
+    than casual internal gains -- handled separately, and only for annual
+    economics, not this project's winter-evening peak question, in
+    notebooks/05's BESS/solar comparator); a diurnal occupancy/cooking
+    schedule (constant gains likely UNDERSTATE gains during the 16:00-20:00
+    peak window specifically, when cooking and occupancy are typically
+    highest, and OVERSTATE them overnight when a home may be unoccupied or
+    asleep -- a flat 400W is a simplification in both directions, not a
+    conservative one in either).
+
+resolved_physics:
+  # Derived quantities, not independent inputs. Reproduce these by hand from
+  # envelope_states above (and internal_gains_w.point) before trusting any
+  # notebook output — this is the 60-second reviewer check from the
+  # Traceability Mandate (PROJECT.md Section 6).
+  #
+  # Revised to include internal_gains_w (400W point estimate) after
+  # external review pointed out the model was treating the house as an
+  # empty box. H and tau are UNCHANGED by this (gains are a heat source,
+  # not a change to the loss coefficient or thermal capacity) -- only
+  # coastdown_hours and peak_kw shift. See PROJECT.md Section 8.9 for the
+  # before/after comparison.
+  status: GROUNDED
+  baseline:  { h_w_per_k: 273, tau_hours: 36.6, coastdown_hours_at_minus3c: 5.0,  peak_kw_at_cop2_5: 2.46 }
+  swi_only:  { h_w_per_k: 231, tau_hours: 43.3, coastdown_hours_at_minus3c: 6.0,  peak_kw_at_cop2_5: 2.06 }
+  epc_c:     { h_w_per_k: 86,  tau_hours: 116,  coastdown_hours_at_minus3c: 18.7, peak_kw_at_cop2_5: 0.66 }
+  pre_gains_reference:
+    note: >
+      The figures this project reported before the internal-gains revision,
+      kept here for traceability -- not used by any notebook.
+    baseline:  { coastdown_hours_at_minus3c: 4.7,  peak_kw_at_cop2_5: 2.62 }
+    swi_only:  { coastdown_hours_at_minus3c: 5.5,  peak_kw_at_cop2_5: 2.22 }
+    epc_c:     { coastdown_hours_at_minus3c: 15.0, peak_kw_at_cop2_5: 0.82 }
+
+heat_pump:
+  cop_at_cold_snap: 2.5
+  status: PROVISIONAL
+  note: >
+    Conservative estimate for an older hydronic system at -3C outdoor.
+    Not sourced to a specific product performance curve
+    (see omitted.items: manufacturer-specific COP curves).
+
+comfort_band:
+  status: DELIBERATE
+  minimum_c: 19
+  normal_setpoint_c: 21
+  preheat_ceiling_c: 22
+  vulnerable_household_minimum_c: 20
+  note: >
+    19C is the base flexibility floor; run a 20C sensitivity for
+    vulnerable/elderly tenants. The model must show fabric giving the VPP
+    more headroom — never that tenants should tolerate colder homes.
+
+cold_snap_event:
+  status: GROUNDED
+  source: >
+    Met Office, "Prolonged spell of low temperatures, December 2022"
+    (National Climate Information Centre, published 10 January 2023).
+  primary_event:
+    dates: "11-17 December 2022 (7 days)"
+    note: >
+      Event ran nationally 8-18 Dec 2022. 11-17 Dec was chosen as the 7-day
+      window because it captures both the coldest daytime maxima (11-14 Dec,
+      UK area-average max 0C on 12th) and the coldest overnight minima
+      (15-16 Dec, UK area-average min -6.5C on 16th, equal-lowest since
+      Dec 2010), ending just before the rapid thaw on the 18th.
+  hourly_profile_status: PROVISIONAL
+  hourly_profile_note: >
+    No raw ERA5/station hourly reanalysis pulled for this MVP. The hourly
+    series used in notebooks/02 is a synthetic diurnal cycle calibrated to
+    the Met Office's reported UK area-average daily max/min for each day of
+    the window, used as a regional proxy for North West England (no
+    Manchester-specific station reading was available from the source
+    report). Replacing this with real ERA5/station hourly data for the
+    Manchester/Bolton grid cell specifically is flagged as future work, not
+    silently assumed equivalent.
+  sensitivity_event: "Beast from the East, Feb-Mar 2018 (backlog, not primary)"
+  region: "North West England urban terrace belt (Manchester/Bolton) — representative of dense pre-1919 terrace stock"
+  design_outdoor_temp_c: -3
+  design_outdoor_temp_note: >
+    Used as the single design temperature for notebook 01's closed-form
+    coastdown calculation. Note this is milder than the real event's
+    reported UK area-average minimum of -6.5C on 16 Dec — -3C is a
+    moderate stress case, not the event's worst point. Notebook 02 uses the
+    full calibrated hourly range instead of this single value.
+  peak_window: "16:00-20:00"
+
+tenure_mix:
+  status: GROUNDED
+  source: >
+    Regulator of Social Housing 2024-25 local authority stock statistics;
+    New Economics Foundation (2024) Right to Buy analysis; peak 1981 local
+    authority stock (5.49m homes).
+  local_authority_retained: 0.24
+  housing_association_retained: 0.41
+  ex_rtb_privately_rented: 0.15
+  ex_rtb_owner_occupied: 0.20
+  note: >
+    LA/HA split corrected from an initial 35/30 assumption to reflect the
+    true national ~37:63 LA:HA ratio within social stock.
+
+solid_wall_insulation_probability:
+  status: GROUNDED
+  source: "English Housing Survey 2024-25, Annex Table 2.10"
+  local_authority: 0.34
+  housing_association: 0.37       # up from 0.28 in 2023 — track as a trajectory, not a static input
+  ex_rtb_privately_rented: 0.10
+  ex_rtb_owner_occupied: 0.11
+  weighted_current_state_prevalence: 0.27
+
+state_of_charge_behavioural_note:
+  status: OMITTED
+  note: >
+    External review point: the model's coastdown physics assumes a "charged
+    battery" -- a 21C starting indoor temperature before any curtailment.
+    This is a physical capacity model, not a delivered-flexibility model.
+    Fuel poverty, prepayment-meter self-rationing, and general
+    under-heating concentrate in exactly the lowest-insulation-probability
+    tenure segments this project already models (ex-RTB privately rented
+    above all) -- so real occupant behaviour is plausibly ANTI-CORRELATED
+    with fabric quality: the segments least likely to be insulated are also
+    plausibly the ones least likely to be heated to 21C in the first place.
+    If true, the USABLE thermal-battery capacity across the estate is below
+    even the 27% weighted_current_state_prevalence figure above, because
+    that figure describes fabric capability, not realised state of charge.
+    Not modelled here -- no occupant behaviour or metered temperature data
+    was used (see omitted.items) -- but the direction of the effect only
+    sharpens this project's tenure-equity finding, even as it weakens the
+    flexibility-RESOURCE claim in isolation.
+
+uncertainty_budget_note:
+  status: PROVISIONAL
+  note: >
+    The Monte Carlo in notebooks/03 propagates uncertainty in COP, thermal
+    capacity, and geometry -- genuinely uncertain physical parameters. It
+    does NOT propagate survey error in the tenure shares or solid-wall
+    insulation probabilities themselves (tenure_mix and
+    solid_wall_insulation_probability above are treated as exact once
+    cited), so the headline 27% prevalence figure is reported as a point
+    estimate, not a distribution. Separately, the feeder-level small-N
+    sampling in notebooks/03 draws each simulated 30-home feeder as an
+    independent, identically-distributed sample from the estate-wide mix.
+    Real tenure is spatially autocorrelated -- whole streets were sold off
+    under Right to Buy together, rather than individual homes being
+    randomly scattered -- so true real-world feeder-to-feeder variation is
+    likely WIDER than the simulated 17%-37% (P10-P90) range, and the
+    simulated 0%-insulated worst case is likely more common in reality than
+    this model suggests. Treat the simulated feeder range as a lower bound
+    on real-world clustering, not an upper one.
+
+retrofit_cost_gbp_to_epc_c:
+  status: GROUNDED
+  source: "English Housing Survey 2024-25, Annex Table 2.14"
+  local_authority: 5050
+  housing_association: 6082
+  owner_occupied: 7869
+  private_rented: 7040
+  pre_1919_age_band_average: 10728
+
+policy_context:
+  status: GROUNDED
+  warm_homes_plan_published: "2026-01-21"
+  warm_homes_plan_total_gbp: 15000000000
+  warm_homes_social_housing_fund_gbp: 1290000000
+  epc_c_backstop_year: 2030
+  epc_c_backstop_applies_to: ["social rented", "private rented"]
+
+vpp_economics:
+  dno_flexibility_value_gbp_per_kw_per_year:
+    status: PROVISIONAL
+    low: 20
+    point: 68
+    high: 100
+    source: >
+      Search-engine-summarized Piclo Flex DNO flexibility tender data (2024/25/26
+      delivery windows) put the "Sustain" service average clearing price at
+      roughly £68/kW/delivery period; UK Power Networks' DSO Performance Panel
+      Report 2024/25 separately reports flexibility delivered ~£91m in
+      avoided-reinforcement customer benefit in 2023/24 (an aggregate, not a
+      £/kW figure). The primary Piclo/DNOA tender documents were not
+      independently pulled for this MVP -- treat £68 as an illustrative point
+      estimate inside a wide low/high band, not a verified market rate.
+    note: >
+      This is a recurring flexibility-SERVICE payment (paid per delivery
+      window, renewable each tender round), not a one-off avoided-capex NPV
+      for permanently deferred network reinforcement. Do not conflate the two
+      framings.
+    category_error_warning: >
+      External review, correctly: flexibility-service tenders (Piclo Flex
+      and equivalent DNO/DSO procurement) require METERED, DISPATCHABLE,
+      VERIFIABLE demand reduction against a settled baseline. Passive
+      fabric retrofit, on its own, is none of these things -- it is
+      invisible to settlement with no controllable asset, meter, or
+      dispatch signal attached. It CANNOT bid into these markets as
+      modelled here. Pricing the avoided-kW figure against this £/kW/year
+      rate is therefore not a realistic revenue estimate; it is only a
+      "what would this be worth IF it were contractible" illustration.
+      notebooks/04 states this explicitly rather than presenting £127/home/
+      year as money a landlord could actually collect. The two genuinely
+      monetisable channels this project has NOT quantified are (a)
+      avoided/deferred DNO reinforcement CAPEX (a one-off, distinct from
+      this recurring service-rate figure, and realistically requiring a
+      metered, aggregated, dispatchable asset such as a heat-battery or
+      heat-pump-plus-controls package layered on top of the fabric, not
+      fabric alone) and (b) direct energy bill savings from reduced heat
+      loss, which were never in scope for this notebook. Both are added to
+      omitted.items below.
+
+  domestic_battery_installed_cost_gbp_per_kwh:
+    status: GROUNDED
+    low: 400
+    point: 650
+    high: 950
+    source: >
+      UK domestic battery storage retail market surveys, 2026 (BookaBuilderUK,
+      Renewables Excellence, Habo Energy, How To Go Solar) -- multiple
+      independent surveys triangulate to the same order of magnitude for a
+      ~10kWh installed system. Prices include 0% VAT (available until March
+      2027) and cover hardware plus installation, not just cell cost.
+    note: >
+      Used only as a value-comparison anchor for the battery-equivalence
+      framing in notebooks/04 Section 4 -- never as a claim that thermal mass
+      and lithium storage are functionally interchangeable.
+
+bess_solar_vpp:
+  status: PROVISIONAL
+  note: >
+    Added for the Week 5 extension (notebooks/05_bess_vpp_solar_comparator.ipynb):
+    a BESS (battery energy storage system) + rooftop solar + VPP fit-out,
+    modelled as a comparator/complement to the fabric retrofit, not a
+    replacement for it. Unlike the fabric retrofit's economics (Section
+    vpp_economics above), the VPP/arbitrage revenue channel here is REAL and
+    currently contractible -- Axle Energy, Kraken (Octopus), and Tesla's UK
+    VPP all pay real UK households today. This block follows PROJECT.md
+    Section 2.2 (Sledgehammer Test): it reuses researched real-world UK 2026
+    market figures for cost and revenue rather than building a new solar-
+    irradiance or annual-dispatch simulation from scratch.
+
+  battery_hardware:
+    status: GROUNDED
+    source: >
+      Tesla Powerwall 3 datasheet (energylibrary.tesla.com); GivEnergy
+      All-in-One 2 product data (Atlantic Renewables, Lumos Energy
+      comparisons, 2026).
+    usable_capacity_kwh: 10
+    continuous_power_rating_kw:
+      low: 3.6
+      point: 5.0
+      high: 11.5
+    note: >
+      Domestic battery power ratings vary substantially by product -- from
+      ~3.6-6 kW (GivEnergy All-in-One 2, many mid-market UK installs) up to
+      11.5 kW (Tesla Powerwall 3). The point estimate (5.0 kW) is
+      representative of a common mid-market UK hybrid-inverter install, not
+      the top of the range. Used to check whether a battery can physically
+      cover a home's peak-window electrical demand, not just its total
+      energy (kWh) -- capacity and power rating are different, easily
+      conflated quantities.
+
+  solar_pv:
+    status: PROVISIONAL
+    source: >
+      UK solar specific-yield and typical system-size market data (Payaca
+      MCS irradiance calculator, Sunsave, RenewableEnergyHub, 2026 surveys).
+    system_size_kwp: 4.0
+    specific_yield_kwh_per_kwp_per_year:
+      low: 850
+      point: 950
+      high: 1100
+    orientation_derate_factor:
+      status: DELIBERATE
+      value: 0.85
+      note: >
+        A mid-terrace's pitched roof typically has two usable faces -- front
+        (street-facing) and rear -- oriented however the street itself runs,
+        which is not reliably south. Applying a representative ~15% yield
+        penalty for a non-ideal (e.g. east/west-facing) orientation rather
+        than assuming the best-case south-facing yield used in most
+        marketing quotes. Not archetype-specific -- a real terrace's
+        orientation should be checked, not assumed.
+    estimated_annual_generation_kwh: 3230
+      # 4.0 kWp x 950 kWh/kWp/yr x 0.85 orientation derate. Context/sanity-
+      # check figure only -- this project does not model hour-by-hour solar
+      # generation or self-consumption; economic value below uses researched
+      # real-world bill-saving and VPP-earnings figures instead (Sledgehammer
+      # Test), not a bottom-up generation/dispatch simulation.
+    roof_constraint_note: >
+      A 4 kWp system is broadly achievable on a typical mid-terrace's two
+      roof pitches (market data: "most UK homes install 3-5kW"), but this is
+      not independently checked against this archetype's specific
+      roof_area_m2 (35 m2 footprint) in this project. Conservation-area
+      planning rules (common for pre-1919 terrace streets) typically permit
+      rear-pitch panels without planning permission but require permission
+      for street-facing (front) panels visible from the highway -- a real
+      installation might therefore be rear-pitch-only, roughly halving the
+      achievable roof area relative to a detached/non-heritage property.
+      Not quantified further here -- flagged as a real-world friction the
+      4 kWp figure does not account for.
+
+  installed_cost_gbp_bundled_4kwp_10kwh:
+    status: GROUNDED
+    low: 10500
+    point: 13500
+    high: 19500
+    source: >
+      UK 2026 market surveys for a bundled ~4kWp solar + ~10kWh battery
+      install (bestbuilders.co.uk, sunsave.energy, uk.jackery.com,
+      spectrumenergysystems.co.uk). Multiple independent surveys triangulate
+      to a wide but consistent order of magnitude; installing solar and
+      battery together (shared inverter, one electrician visit) typically
+      saves GBP 700-1,200 versus retrofitting a battery later. Includes 0%
+      VAT (available until March 2027).
+    note: >
+      Comparator for the fabric retrofit's GBP 10,728/home headline cost
+      (retrofit_cost_gbp_to_epc_c above) -- roughly 1x-1.8x the fabric
+      retrofit cost, for a functionally different (dispatchable, revenue-
+      generating) asset rather than a directly substitutable one.
+
+  vpp_and_arbitrage_earnings_gbp_per_year:
+    status: GROUNDED
+    vpp_dispatch_low: 120
+    vpp_dispatch_high: 300
+    arbitrage_low: 800
+    arbitrage_high: 950
+    combined_low: 920
+    combined_point: 1075
+    combined_high: 1250
+    source: >
+      Axle Energy (GBP 1/kWh dispatch payments, GBP 10/month minimum,
+      multi-brand inverter support), Kraken/Octopus (Intelligent Octopus Go,
+      Saving Sessions), Tesla UK VPP (launched with Octopus Energy, July
+      2025) -- Habo Energy 2026 market summary. VPP dispatch payments
+      (GBP 120-300/yr) and time-of-use energy arbitrage (GBP 800-950/yr,
+      e.g. Octopus Go) are two distinct, stackable real revenue streams for
+      the SAME battery.
+    note: >
+      Unlike the fabric retrofit's DNO flexibility-service figure
+      (vpp_economics.dno_flexibility_value_gbp_per_kw_per_year above), this
+      is a REAL, currently-contractible revenue stream -- a battery is
+      metered, dispatchable, and verifiable by construction, so it does not
+      have the category-error problem passive fabric has. This is the
+      central physical/market difference between the two asset types, not
+      just a difference in £ magnitude.
+
+  split_incentive_note:
+    status: PROVISIONAL
+    source: >
+      UK landlord/solar market guidance (Upvolt Energy, EnergyPlus,
+      SolarPowerUKGrants, 2026); Octopus Energy "Tenant Power" social-housing
+      tariff announcement.
+    note: >
+      BESS/solar has a split-incentive problem too, but a DIFFERENT one from
+      fabric retrofit's. Fabric retrofit's split incentive is about who pays
+      capex vs who gets bill/comfort benefit (a landlord funds it, a tenant's
+      comfort and energy bill improve). BESS/VPP's split incentive is sharper:
+      the ONGOING REVENUE (VPP dispatch + arbitrage, GBP 920-1,250/year
+      above) typically accrues to whoever holds the electricity supply
+      account -- usually the TENANT in a standard single-let, not the
+      landlord who would fund the GBP 10,500-19,500 install. Export income
+      can be split three ways in practice (tenant-claimed, landlord-retained
+      at ~GBP 150-200/yr, or a negotiated share), but the larger arbitrage/
+      VPP revenue stream generally requires the bill-payer's own supply
+      contract and smart-tariff enrolment, which a landlord cannot unilaterally
+      capture. Products like Octopus's "Tenant Power" tariff (explicitly
+      splits solar+battery value between tenant and housing association) are
+      an emerging attempt to solve exactly this, not yet the norm. This
+      makes the capital-to-revenue-capture mismatch for a rental-sector
+      landlord WORSE for BESS/solar than for fabric retrofit, where at least
+      EPC-compliance and asset-value benefits accrue to the landlord even
+      when bill savings go to the tenant.
+
+  landlord_finance_context:
+    status: DELIBERATE
+    note: >
+      Added as a Week 6 addendum to unpack split_incentive_note's closing
+      clause ("EPC-compliance and asset-value benefits accrue to the
+      landlord") into the actual regulatory/finance mechanism, in landlord-
+      finance terms rather than energy terms. For a housing association,
+      fabric retrofit is better framed as an asset-protection-and-compliance
+      investment than an energy investment; a battery is neither. Two
+      mechanisms are GROUNDED (real, dated policy commitments); one
+      (the EPC-to-EUV-SH valuation link) is DELIBERATE reasoning, not an
+      independently sourced formula -- flagged as such in FINDINGS.md
+      Finding 6, per this project's own honesty-scaffolding discipline.
+    mees_extended_to_social_housing:
+      status: GROUNDED
+      note: >
+        Minimum Energy Efficiency Standards apply to the social rented
+        sector for the first time: one reformed EPC metric (of three --
+        fabric, smart readiness, heating system) by 1 April 2030, a second
+        by 1 April 2039, subject to a time-limited GBP 10,000-per-property
+        spend cap on the first deadline. See citations.md.
+    decent_homes_standard_criterion_d:
+      status: GROUNDED
+      note: >
+        The reformed Decent Homes Standard (government response, 27 January
+        2026) folds MEES compliance into Criterion D (Thermal Comfort)
+        directly, with providers given until 2035 to comply; a separate new
+        Criterion E covers damp and mould. See citations.md.
+    euv_sh_valuation_link:
+      status: DELIBERATE
+      note: >
+        Housing association stock is carried on the balance sheet at
+        Existing Use Value-Social Housing (EUV-SH), a RICS-derived,
+        rental-income-based valuation (roughly 30-40% of open-market value,
+        region-dependent) that lenders assess loan covenants against -- this
+        much is GROUNDED (see citations.md). That a below-standard EPC
+        directly depresses a property's REPORTED EUV-SH figure is reasoned
+        from the compliance exposure above, not independently verified
+        against a primary valuation methodology document in this pass --
+        do not present this specific causal link as more certain than it is.
+    battery_epc_and_decency_contribution:
+      status: DELIBERATE
+      note: >
+        A domestic battery, unlike fabric or solar PV, is not a scored input
+        in the RdSAP methodology this project's EPC-band framing relies on
+        elsewhere, and does nothing for the damp/mould now assessed under
+        Criterion E -- so it does not reduce a landlord's exposure under
+        either mechanism above, however its VPP/arbitrage revenue is split
+        between landlord and tenant (see split_incentive_note above).
+
+  adoption_by_tenure:
+    status: PROVISIONAL
+    source: >
+      MCS Certified 2026 installation data (mcscertified.com) for solar-owner
+      tenure composition (70.6% owner-occupied, 12.8% privately rented) and
+      social-housing solar installs (233,061 of ~4.5m social units, ~5.2%);
+      Sunsave/Kind Energy 2026 total UK residential solar count (~1.5-1.95m
+      homes, point ~1.7m used here); English Housing Survey 2024-25 tenure
+      population counts (16.2m owner-occupied, 4.7m privately rented,
+      England).
+    derivation_note: >
+      National per-tenure ADOPTION RATES are not directly published --
+      derived here by combining MCS's tenure SHARE-OF-OWNERS figures with
+      total UK solar install counts and EHS tenure population counts, the
+      same "back out a rate from a share-of-total finding" method already
+      used for ex_rtb_privately_rented/owner_occupied in tenure_mix above.
+      Treat as an order-of-magnitude estimate, not a precise published rate,
+      and as inherently mixed-vintage (component figures drawn from
+      different 2026 publication dates).
+    local_authority: 0.052
+    housing_association: 0.052
+    ex_rtb_privately_rented: 0.052
+    ex_rtb_owner_occupied: 0.083
+    note: >
+      No separate LA-vs-HA or ex-RTB-rented-vs-owner solar breakdown exists
+      in the sources used -- social housing's combined ~5.2% rate is applied
+      to both LA and HA, and national all-ages tenure rates are applied to
+      both ex-RTB segments, same simplification pattern as elsewhere in this
+      config where a finer breakdown isn't available.
+    weighted_current_state_prevalence: 0.058
+    policy_context: >
+      Since February 2026, the Warm Homes Social Housing Fund (already
+      GROUNDED above for fabric retrofit) allows landlords to add battery
+      storage alongside solar under the same grant mechanism (up to GBP
+      7,500/home), MCS-certified installer required. This is brand new and
+      not yet reflected in the adoption figures above -- flagged
+      FORWARD-LOOKING, not assumed to have already shifted the ~5.2% social
+      housing rate.
+    contrast_with_fabric: >
+      Fabric retrofit's weighted estate prevalence is 27% (roughly 4.6x
+      higher than BESS/solar's ~5.8%), even though fabric currently has NO
+      real, contractible flexibility-market revenue mechanism (the category-
+      error finding above) while BESS/VPP does. The asset with the working
+      revenue mechanism has barely been deployed on this estate to date --
+      because fabric retrofit has been landlord-funded and programme-driven
+      (Warm Homes Social Housing Fund, HRA capital), while solar+battery has
+      historically been an individual owner-occupier consumer purchase, not
+      a landlord rollout. This is a real, quantified asymmetry worth
+      reporting, not just an assumption.
+
+annual_impact:
+  status: PROVISIONAL
+  note: >
+    Added for the annual-impact extension (notebooks/06_annual_impact_and_carbon.ipynb):
+    every prior finding in this project is a single design-point (-3C) or a
+    single 7-day event (Dec 2022) snapshot. This block extends the same
+    archetype and the same three fabric states to a full year, using
+    monthly-resolution weather rather than a new hourly simulation
+    (Sledgehammer Test: researched real-world monthly/market figures, not a
+    new bottom-up annual dispatch model) -- see
+    physics.annual_heating_electrical_kwh for the method and its stated
+    conservative bias.
+
+  monthly_mean_outdoor_temp_c:
+    status: PROVISIONAL
+    source: >
+      climate-data.org, Manchester station climatology, 1991-2021 monthly
+      averages (en.climate-data.org/europe/united-kingdom/england/manchester-3621).
+      Not the Met Office's own 1991-2020 normals series directly (that
+      portal's full monthly table could not be retrieved in this pass) --
+      flagged as a close proxy, not a citation to the primary Met Office
+      dataset, consistent with this project's existing practice of
+      disclosing when a proxy source is used instead of primary data (see
+      cold_snap_event.hourly_profile_note above for the same pattern).
+    region: "Manchester -- same North West England region as cold_snap_event above"
+    values_c:
+      jan: 4.0
+      feb: 4.1
+      mar: 5.6
+      apr: 8.1
+      may: 11.2
+      jun: 14.0
+      jul: 15.7
+      aug: 15.2
+      sep: 13.3
+      oct: 10.3
+      nov: 6.7
+      dec: 4.4
+
+  electricity_price_gbp_per_kwh:
+    status: GROUNDED
+    value: 0.2611
+    source: >
+      Ofgem energy price cap, Direct Debit standard variable tariff,
+      1 July - 30 September 2026 (26.11 p/kWh, GB average, incl. 5% VAT).
+      The cap is set quarterly and moves: 27.69 p/kWh Jan-Mar 2026, 24.67
+      p/kWh Apr-Jun 2026, 26.11 p/kWh Jul-Sep 2026 -- the current quarter's
+      figure is used as the point estimate, not an annual average across
+      quarters, since only three of the year's four quarters were available
+      to check in this pass.
+    note: >
+      This is a bill-savings input (a real cost avoided by the household),
+      distinct from the DNO flexibility-service rate and the VPP
+      arbitrage/dispatch rates elsewhere in this config, which value a
+      different thing (a grid service, not a bill).
+
+  grid_carbon_intensity:
+    status: PROVISIONAL
+    average:
+      status: GROUNDED
+      value_kg_co2e_per_kwh: 0.131
+      source: >
+        DESNZ 2026 UK Government GHG Conversion Factors for Company
+        Reporting, location-based grid electricity factor, published 11
+        June 2026 (down from 0.177 kg CO2e/kWh in the 2025 release, on
+        continued grid decarbonisation). Cross-checked against National
+        Grid ESO real-time carbon-intensity tracker data for 2026: year-to-
+        date average ~141 gCO2/kWh, rolling 12-month average ~122 gCO2/kWh
+        -- same order of magnitude, corroborating the DESNZ figure.
+    marginal_proxy:
+      status: PROVISIONAL
+      value_kg_co2e_per_kwh_range: [0.35, 0.40]
+      note: >
+        NOT an official DESNZ long-run marginal emission factor (LRMEF) --
+        DESNZ's own appraisal guidance ("Valuation of energy use and GHG
+        emissions for appraisal") directs analysts to the AVERAGE factor
+        (Data Table 1) for grid electricity generation in most cases, and a
+        specific current LRMEF series could not be independently pinned
+        down to a precise, dated value in this pass. This range is instead
+        a labelled PROXY: the typical generation emissions intensity of a
+        combined-cycle gas turbine (CCGT), the plant type most likely to be
+        the marginal (last-called) generator on the GB system even as the
+        average keeps falling with wind/solar/nuclear. Reported alongside
+        the average figure, per project decision, as a sensitivity showing
+        how much higher abatement could look if marginal generation is what
+        a demand reduction actually displaces -- not presented as more
+        authoritative than the average figure, and not to be quoted as an
+        official government series.
+
+  summer_dynamics:
+    status: OMITTED_QUALITATIVE
+    note: >
+      Sledgehammer Test treatment only -- literature/guidance-grounded
+      flags, not modelled or quantified against this archetype. Doing
+      either properly would need data this project does not have (a
+      monthly/hourly solar generation and export profile; a real LV
+      network headroom figure; a dynamic thermal model run against a
+      summer weather year) -- both are flagged as future work, not
+      silently assumed away.
+    solar_export_voltage_risk:
+      source: >
+        National Grid Electricity Distribution / ENA G98-G99 connection
+        guidance; UK statutory voltage range 216-253V.
+      note: >
+        If many homes on the same LV network export solar simultaneously
+        on a sunny day, voltage can rise above the statutory limit -- a
+        real, DNO-documented constraint distinct from (and in some ways
+        opposite to) the winter peak-demand story the rest of this project
+        is about. This project's own solar generation figure
+        (bess_solar_vpp.solar_pv.estimated_annual_generation_kwh) is an
+        ANNUAL total with no monthly or hourly shape, so it cannot show
+        when in the year, or how concentrated, that export risk actually
+        is -- a real gap, not a rounding matter.
+    overheating_risk:
+      source: >
+        CIBSE TM59 (2026 update) methodology for assessing overheating risk
+        in dwellings; Buildings journal, "Effects of Retrofit Strategies on
+        Thermal Comfort and Energy Performance in Social Housing for
+        Current and Future Weather Scenarios" (2025, doi.org/10.3390/buildings15010080).
+      note: >
+        Retrofit that improves winter performance can worsen summer
+        overheating risk in the same home -- the same fabric that holds
+        heat in during a December cold snap also holds heat in during a
+        July heatwave. The cited study found south-facing bedrooms in
+        retrofitted social housing at particular risk, and that external
+        wall insulation (this project's own assumption throughout --
+        envelope_states.wall_insulation_type_assumption) outperforms
+        internal wall insulation on summer comfort specifically, a genuine
+        point in favour of this project's EWI assumption. Worth stating
+        plainly given how much weight this project has put on tenant
+        welfare elsewhere: a fabric-first recommendation should carry this
+        caveat, not present retrofit as a pure winter-only upside.
+
+  lifetime_economics:
+    status: GROUNDED
+    note: >
+      Added for the negawatt/policy-audience piece (linkedin_article_negawatt.md):
+      combines retrofit_cost_gbp_to_epc_c (vpp_economics above),
+      electricity_price_gbp_per_kwh and grid_carbon_intensity (both above),
+      and this block's own fabric_life_years, to compute (a) simple bill-
+      saving payback and (b) a lifetime marginal abatement cost -- both a
+      GROSS figure (capital cost / lifetime carbon abated, ignoring bill
+      savings) and a NET figure (capital cost MINUS lifetime bill savings,
+      divided by lifetime carbon abated). The net figure is the
+      methodologically standard one (matches how marginal abatement cost
+      curves treat fuel-cost savings as an offsetting benefit) and is
+      strongly negative here -- i.e. this measure saves money AND abates
+      carbon over its working life, not merely "cheap" abatement. See
+      notebooks/06_annual_impact_and_carbon.ipynb Section 8 for the
+      executed calculation and FINDINGS.md Finding 8 for the write-up.
+    fabric_life_years:
+      status: GROUNDED
+      value: 36
+      source: >
+        Ofgem, Energy Company Obligation (ECO) "Appropriate Guarantees"
+        scheme documentation -- standard measure lifetimes for insulation
+        measures installed under ECO/Green Deal: cavity wall insulation 42
+        years, solid wall insulation 36 years, mobile home insulation 30
+        years (guarantee itself is a shorter 25-year financial-assurance
+        period; the 36-year figure is the measure's assumed working life,
+        not the guarantee term).
+      note: >
+        Applies to solid wall insulation generally, not specifically to the
+        external wall insulation (EWI) variant this project assumes
+        throughout (envelope_states.wall_insulation_type_assumption) -- no
+        EWI-specific lifetime figure was found separately in this pass.
+        Superseded a previous, unsourced round-number placeholder of 40
+        years used in an earlier article draft; 36 years is the traceable
+        figure and should be used in any published output.
+    payback_years_baseline_to_epc_c:
+      status: GROUNDED
+      value: 5.4
+      derivation: >
+        vpp_economics.retrofit_cost_gbp_to_epc_c.point (GBP 10,728) divided
+        by annual_impact's own baseline-to-EPC-C bill saving (GBP 1,984/yr,
+        from the pairwise comparison in notebooks/06) = 5.41 years. Simple
+        (undiscounted) payback from bill savings alone -- does not include
+        any flexibility-market or carbon-price revenue.
+    marginal_abatement_cost_gbp_per_tco2e:
+      status: GROUNDED
+      gross_average_basis: 299.3
+      gross_marginal_basis_range: [98.0, 112.0]
+      net_average_basis: -1693.8
+      net_marginal_basis_range: [-634.0, -554.7]
+      derivation: >
+        Gross = retrofit_cost_gbp_to_epc_c.pre_1919_age_band_average / (
+        fabric_life_years x annual carbon abated per year, baseline-to-
+        EPC-C). Net = (retrofit_cost_gbp_to_epc_c.pre_1919_age_band_average
+        - (annual bill saving x fabric_life_years)) / (fabric_life_years x
+        annual carbon abated). Average-basis carbon uses
+        grid_carbon_intensity.average; marginal-basis uses
+        grid_carbon_intensity.marginal_proxy range (so the marginal RANGE
+        above reflects only the carbon-intensity range, at a fixed
+        lifetime and cost -- it is not itself a further sensitivity on
+        lifetime or cost). Negative net figures mean the measure is cash-
+        positive over its life even before counting any carbon value -- a
+        standard "no-regrets" / negative-cost abatement result, not a sign
+        error. Computed from the EXACT (unrounded) pipeline intermediates
+        (displaced energy 7,599.66 kWh/yr, bill saving GBP 1,984.27/yr,
+        0.9956/2.660-3.040 tCO2e/yr avg/marginal) -- hand-checking from the
+        ROUNDED display figures published elsewhere (7,600 kWh, GBP 1,984,
+        1.0t/2.7-3.0t) gives close but not identical results (e.g. gross
+        average ~GBP 298 vs the exact GBP 299.3), same display-rounding
+        tolerance already documented for the 64.6/79.2 kW stress-test
+        figures in PROJECT.md Section 8.9. See notebooks/06 Section 8 for
+        the executed, hand-checked version of this calculation.
+
+omitted:
+  status: OMITTED
+  note: "Not modelled in this MVP. Must remain visible in every output and README, never silently dropped."
+  items:
+    - domestic hot water demand
+    - summer overheating
+    - measured smart-meter data (physics-based digital twin only)
+    - manufacturer-specific heat pump COP curves
+    - real DNO substation-level headroom data
+    - actual tenant behaviour data, including occupant heating patterns and prepayment/fuel-poverty self-rationing (state_of_charge_behavioural_note above)
+    - a settled payment mechanism for residential-scale fabric-driven flexibility (FORWARD-LOOKING)
+    - a verified, one-off avoided-reinforcement CAPEX value (distinct from the illustrative recurring flexibility-service-payment rate above)
+    - direct energy bill savings from reduced heat loss
+    - spatial autocorrelation of tenure/insulation within real feeders or streets (uncertainty_budget_note above)
+    - a metered, dispatchable, aggregated asset layer (e.g. smart controls, heat battery) that would actually make fabric-driven flexibility contractible in a settlement-based market
+    - hour-by-hour solar generation and self-consumption/export dispatch simulation (bess_solar_vpp uses researched annual market figures, not a bottom-up simulation)
+    - real roof-area/orientation survey data for this specific archetype (bess_solar_vpp.solar_pv.roof_constraint_note is a flagged friction, not a quantified derate)
+    - a separate LA-vs-HA or ex-RTB-rented-vs-owner solar/battery adoption breakdown (bess_solar_vpp.adoption_by_tenure uses combined/national rates, not a per-segment published figure)
+    - battery degradation, round-trip efficiency losses, and inverter clipping in the VPP/arbitrage earnings figures (taken as published net figures, not independently re-derived)
+    - solar (as opposed to internal/casual) heat gains through windows -- still omitted from the coastdown/peak-kw physics even though internal_gains_w is now modelled; see internal_gains_w.omitted_from_this_figure
+    - a diurnal occupancy/cooking schedule for internal gains -- modelled as a flat constant (internal_gains_w) rather than time-varying, which understates gains during the 16:00-20:00 peak window specifically and overstates them overnight
