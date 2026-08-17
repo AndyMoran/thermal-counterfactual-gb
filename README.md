@@ -2,6 +2,20 @@
 
 **Thermal Envelope as a Passive Grid Asset** — a physics-based counterfactual showing how much "hidden battery" a fabric retrofit creates for a VPP during a UK winter cold snap, and who actually controls whether that capacity ever gets unlocked.
 
+This project models:
+
+- the thermal envelope as a passive storage asset
+
+- the hour‑by‑hour coastdown behaviour of baseline vs EPC‑C fabric
+
+- estate‑level outcomes under fragmented tenure
+
+- the economics of flexibility, battery equivalence, and carbon abatement
+
+-the operational limits that prevent passive fabric from being contractible today
+
+All modelling is governed by the research constitution in **PROJECT.md**.
+
 ## Core Thesis
 
 Fabric retrofit turns leaky social housing into flexible grid capacity — but only for the shrinking share of an estate the landlord actually controls, and nobody currently prices that gap.
@@ -22,30 +36,71 @@ When opening a notebook, select the **`thermal-counterfactual-gb`** kernel expli
 
 ```
 thermal-counterfactual-gb/
-├── PROJECT.md                          # full research constitution + project spec — read this first
-├── README.md                           # this file
-├── LICENSE                             # MIT (code only — see LICENSE for the third-party-data scope note)
-├── citations.md                        # full source list with links and evidentiary status
-├── pyproject.toml                      # uv-managed deps: polars, numpy, scipy, matplotlib, streamlit
-├── setup.sh                            # WSL bootstrap
-├── configs/
-│   └── tenure_insulation_assumptions.yml   # every material assumption, tagged by evidentiary status
-├── notebooks/
-│   ├── 01_archetype_physics.ipynb          # geometry, envelope states, H/C/tau (Week 1)
-│   ├── 02_cold_snap_simulation.ipynb       # hour-by-hour coastdown, baseline vs retrofit (Week 2)
-│   ├── 03_estate_population_model.ipynb    # tenure-weighted headline, Monte Carlo, stress test (Week 2-3)
-│   ├── 04_vpp_economics.ipynb              # physics-to-£, DNO avoidance, battery equivalence (Week 3)
-│   ├── 05_bess_vpp_solar_comparator.ipynb  # BESS+solar+VPP comparator: fabric-only vs BESS-only vs stacked (Week 5)
-│   └── 06_annual_impact_and_carbon.ipynb   # whole-year displaced energy, bill savings, carbon (avg+marginal), summer dynamics (Week 6)
+├── PROJECT.md                     # research constitution + analytical pipeline
+├── README.md                      # this file
+├── LICENSE                        # MIT (code only)
+├── citations.md                   # full evidentiary source list
+├── pyproject.toml                 # uv-managed deps
+├── setup.sh                       # WSL bootstrap
+│
+├── configs/                       # all material assumptions
+│   └── tenure_insulation_assumptions.yml
+│
+├── notebooks/                     # Week-by-week modelling pipeline
+│   ├── 01_archetype_physics.ipynb
+│   ├── 02_cold_snap_simulation.ipynb
+│   ├── 03_estate_population_model.ipynb
+│   ├── 04_vpp_economics.ipynb
+│   ├── 05_bess_vpp_solar_comparator.ipynb
+│   └── 06_annual_impact_and_carbon.ipynb
+│
 ├── data/
-│   ├── raw/                            # source data (weather, EHS extracts) — not committed
-│   └── intermediate/                   # parquet handoff between notebooks — not committed
-├── figures/                            # Tufte-compliant output charts — not committed
-├── src/thermal_counterfactual_gb/
-│   └── physics.py                      # shared RC-model functions, imported by notebooks
-└── demo/
-    └── app.py                          # Week 4 Streamlit interactive demo
+│   ├── raw/                       # not committed
+│   └── intermediate/              # parquet handoff — not committed
+│
+├── figures/                       # global modelling outputs — not committed
+│
+├── src/
+│   └── thermal_counterfactual_gb/ # importable modelling library
+│       └── physics.py
+│
+├── demo/
+│   └── app.py                     # Week 4 Streamlit demo
+│
+├── comms/                         # communication + business-case content
+│   ├── linkedin_article_bess_vendors.md
+│   ├── linkedin_article_negawatt.md
+│   ├── linkedin_post_bess_vendors.md
+│   ├── linkedin_post_grid.md
+│   │
+│   └── insulation_business_case/  # stakeholder-facing business-case module
+│       ├── STAKEHOLDER_BRIEFS.md
+│       ├── figures/
+│       ├── linkedin_article_business_case.md
+│       ├── linkedin_post_ceo.md
+│       ├── linkedin_post_facilities.md
+│       ├── linkedin_post_ha_leader.md
+│       └── src/
+│           ├── build_lifetime_economics_chart.py
+│           └── check_combined_capex_hypothesis.py
+│
+└── FINDINGS.md                    # top-level synthesis
+
 ```
+## Comms
+The comms/ folder contains all communication‑oriented outputs derived from the modelling pipeline:
+
+- LinkedIn articles and posts
+
+- stakeholder briefs
+
+- business-case charts and scripts
+
+- segmentation by audience (CEO, facilities, HA leadership)
+
+The **insulation_business_case**/ submodule provides a structured, stakeholder‑ready narrative built on validated modelling outputs.
+It is intentionally separated from the modelling code to preserve analytical hygiene.
+See PROJECT.md Section 6 for the full traceability mandate.
 
 ## Traceability Table
 
