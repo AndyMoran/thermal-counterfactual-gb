@@ -1,0 +1,49 @@
+# EXECUTIVE SUMMARY
+
+## Thermal Envelope as a Passive Grid Asset
+
+This project quantifies how much flexible grid capacity is implicitly created when a leaky UK home receives a fabric retrofit — and how much of that flexibility is actually contractible once tenure fragmentation, operational constraints, and estate‑level control are accounted for.
+
+The modelling pipeline simulates a winter cold snap using a physics‑based 1R1C archetype with 2R2C sensitivity checks, generating hour‑by‑hour coastdown curves for baseline vs EPC‑C fabric. These curves are then population‑scaled across a social housing estate using real tenure distributions, producing a counterfactual estimate of “hidden battery” capacity unlocked by insulation.
+
+The central finding: fabric retrofit behaves like a passive storage asset, but only a fraction of the estate is controllable by the landlord, and current market structures do not price this gap. As a result, the theoretical flexibility unlocked by insulation is materially larger than the flexibility that can be contracted or dispatched today.
+
+The project also benchmarks passive fabric flexibility against BESS, VPP, and solar‑plus‑storage comparators, demonstrating where fabric outperforms (coastdown stability, zero‑carbon dispatch, no cycling degradation) and where it cannot substitute (precision, controllability, market integration).
+
+All modelling is governed by the research constitution in PROJECT.md, which enforces reproducibility, traceability, and evidentiary discipline. Every headline number must be reproducible from configs/tenure_insulation_assumptions.yml in under 60 seconds.
+
+Communication outputs — including stakeholder briefs and LinkedIn articles — are isolated under comms/ to preserve analytical hygiene and prevent narrative content from contaminating the modelling pipeline.
+
+## Key Insights
+
+- Fabric retrofit creates real, quantifiable flexibility during cold snaps, functioning as a passive thermal battery.
+
+- Estate‑level control is the binding constraint — landlords cannot dispatch flexibility from homes they do not control.
+
+- Market structures do not currently price passive flexibility, leading to systematic undervaluation of insulation.
+
+- Passive flexibility is carbon‑perfect and degradation‑free, but lacks the precision required for today’s VPP markets.
+
+ The gap between theoretical and contractible flexibility is the real economic story — and the real policy failure.
+
+## What This Project Enables
+
+- A physics‑grounded method for quantifying insulation as a grid asset.
+
+- A reproducible estate‑level counterfactual for cold‑snap behaviour.
+
+- A structured comparison between passive fabric and active storage.
+
+- Stakeholder‑ready business‑case materials built on validated modelling.
+
+## Limitations
+
+- The model is intentionally simple (1R1C with 2R2C sensitivity).
+
+- It is not a whole‑house annual energy model.
+
+- It is not a dispatch‑ready VPP product.
+
+- It does not claim estate‑specific precision.
+
+Full limitations are documented in PROJECT.md.
