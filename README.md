@@ -12,7 +12,7 @@ This project models:
 
 - the economics of flexibility, battery equivalence, and carbon abatement
 
--the operational limits that prevent passive fabric from being contractible today
+- the operational limits that prevent passive fabric from being contractible today
 
 All modelling is governed by the research constitution in **PROJECT.md**.
 
