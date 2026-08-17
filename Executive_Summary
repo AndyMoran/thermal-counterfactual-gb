@@ -6,7 +6,7 @@ This project quantifies how much flexible grid capacity, bill savings, carbon ab
 
 Using a physics‑based 1R1C archetype with 2R2C sensitivity checks, the modelling simulates a winter cold snap hour‑by‑hour for a pre‑1919 solid‑wall terrace. Coastdown behaviour is then population‑scaled across a mixed‑tenure estate using real tenure distributions. The result is a reproducible counterfactual of “hidden battery” capacity unlocked by insulation.
 
-Across all comms domains — CEO, Facilities, Housing Association leadership, grid operators, and BESS vendors — the same conclusion emerges:
+Across all comms domains — CEO, Facilities, Housing Association leadership, grid operators, BESS vendors, and policy audiences — the same conclusion emerges:
 
 - Fabric retrofit is cash‑positive decarbonisation, a compliance‑critical investment, and a system‑shaping asset.
 - It is the foundation that makes every other technology cheaper, smaller, and more effective.
@@ -53,7 +53,7 @@ Marginal abatement cost:
 
 - –£555 to –£635/tCO₂e (marginal)
 
-Negative cost means the measure saves money and abates carbon simultaneously.
+Negative cost means the measure **saves money and abates carbon simultaneously**.
 
 ## 3. The Compliance Exposure: A Landlord‑Specific Risk
 
@@ -73,7 +73,7 @@ Regulation caps downside risk:
 
 - £10,000/property MEES spend ceiling
 
-The business case for HAs is bill savings + compliance protection, not flexibility income.
+The business case for HAs is ** bill savings + compliance protection**, not flexibility income.
 
 ## 4. The Operational Reality: Fabric‑First Sequencing
 
@@ -105,21 +105,21 @@ Fabric‑first sequencing is the correct operational order.
 
 Adoption reality:
 
-- Fabric adoption: 27%
+Fabric adoption is 4.6× higher (27% vs 5.8%)
 
-- Battery/solar adoption: ~5.8%
-
-Fabric is adopted 4.6× faster because landlords fund fabric and tenants fund batteries.
+Battery/solar adoption: ~5.8%
 
 Tenure fragmentation blocks delivery:
 
-- Ex‑Right‑to‑Buy homes sit outside landlord control
+Ex‑Right‑to‑Buy homes sit outside landlord control
 
-- Street‑level insulation rates vary 0–37%
+Middle 80% of streets range 17–37% insulated
 
-- The most exposed feeder may look nothing like the estate average
+The worst simulated street had 0%
 
-Flexibility exists — but not where you need it.
+The most exposed feeder may look nothing like the estate average
+
+Flexibility exists, but not where you need it.
 
 ## 6. The Checked Hypothesis: Fabric‑First Cuts Combined CapEx
 
