@@ -1,49 +1,181 @@
 # EXECUTIVE SUMMARY
 
-## Thermal Envelope as a Passive Grid Asset
+## Thermal Envelope as a Passive Grid Asset  
 
-This project quantifies how much flexible grid capacity is implicitly created when a leaky UK home receives a fabric retrofit — and how much of that flexibility is actually contractible once tenure fragmentation, operational constraints, and estate‑level control are accounted for.
+This project quantifies how much flexible grid capacity, bill savings, carbon abatement, and avoided peak demand are implicitly created when a leaky UK home receives an EPC‑C fabric retrofit — and how much of that value is actually contractible once tenure fragmentation, operational constraints, and regulatory deadlines are accounted for.
 
-The modelling pipeline simulates a winter cold snap using a physics‑based 1R1C archetype with 2R2C sensitivity checks, generating hour‑by‑hour coastdown curves for baseline vs EPC‑C fabric. These curves are then population‑scaled across a social housing estate using real tenure distributions, producing a counterfactual estimate of “hidden battery” capacity unlocked by insulation.
+Using a physics‑based 1R1C archetype with 2R2C sensitivity checks, the modelling simulates a winter cold snap hour‑by‑hour for a pre‑1919 solid‑wall terrace. Coastdown behaviour is then population‑scaled across a mixed‑tenure estate using real tenure distributions. The result is a reproducible counterfactual of “hidden battery” capacity unlocked by insulation.
 
-The central finding: fabric retrofit behaves like a passive storage asset, but only a fraction of the estate is controllable by the landlord, and current market structures do not price this gap. As a result, the theoretical flexibility unlocked by insulation is materially larger than the flexibility that can be contracted or dispatched today.
+Across all comms domains — CEO, Facilities, Housing Association leadership, grid operators, and BESS vendors — the same conclusion emerges:
 
-The project also benchmarks passive fabric flexibility against BESS, VPP, and solar‑plus‑storage comparators, demonstrating where fabric outperforms (coastdown stability, zero‑carbon dispatch, no cycling degradation) and where it cannot substitute (precision, controllability, market integration).
+- Fabric retrofit is cash‑positive decarbonisation, a compliance‑critical investment, and a system‑shaping asset.
+- It is the foundation that makes every other technology cheaper, smaller, and more effective.
 
-All modelling is governed by the research constitution in PROJECT.md, which enforces reproducibility, traceability, and evidentiary discipline. Every headline number must be reproducible from configs/tenure_insulation_assumptions.yml in under 60 seconds.
+## 1. The Physics: Fabric Creates Flexibility
+A full EPC‑C retrofit transforms the thermal envelope into a passive storage asset:
 
-Communication outputs — including stakeholder briefs and LinkedIn articles — are isolated under comms/ to preserve analytical hygiene and prevent narrative content from contaminating the modelling pipeline.
+- Peak electrical demand drops from 2.46 kW/home → 0.66 kW/home
 
-## Key Insights
+- That’s 1.8 MW avoided peak demand per 1,000 homes
 
-- Fabric retrofit creates real, quantifiable flexibility during cold snaps, functioning as a passive thermal battery.
+- Coastdown capability jumps from 1.6–3.9 hours → 11.4–14.3 hours
 
-- Estate‑level control is the binding constraint — landlords cannot dispatch flexibility from homes they do not control.
+- A 10 kWh battery uses:
 
-- Market structures do not currently price passive flexibility, leading to systematic undervaluation of insulation.
+- - 98% of its capacity to hold comfort in an unretrofitted home
 
-- Passive flexibility is carbon‑perfect and degradation‑free, but lacks the precision required for today’s VPP markets.
+- - 26% in an EPC‑C home
 
- The gap between theoretical and contractible flexibility is the real economic story — and the real policy failure.
+Same battery. Same peak window.
+Completely different operational margin.
 
-## What This Project Enables
+## 2. The Economics: Cash‑Positive Decarbonisation
 
-- A physics‑grounded method for quantifying insulation as a grid asset.
+For this archetype:
 
-- A reproducible estate‑level counterfactual for cold‑snap behaviour.
+- £10,728/home retrofit cost
 
-- A structured comparison between passive fabric and active storage.
+- 5.4‑year payback from bill savings alone
 
-- Stakeholder‑ready business‑case materials built on validated modelling.
+- £60,706 net lifetime savings per home
 
-## Limitations
+- 36‑year fabric life (Ofgem ECO/Green Deal standard)
 
-- The model is intentionally simple (1R1C with 2R2C sensitivity).
+Carbon abatement:
 
-- It is not a whole‑house annual energy model.
+- ~1.0 tCO₂e/home/year (average‑grid)
 
-- It is not a dispatch‑ready VPP product.
+- 2.7–3.0 tCO₂e/home/year (marginal)
 
-- It does not claim estate‑specific precision.
+Marginal abatement cost:
 
-Full limitations are documented in PROJECT.md.
+- –£1,694/tCO₂e (average‑grid)
+
+- –£555 to –£635/tCO₂e (marginal)
+
+Negative cost means the measure saves money and abates carbon simultaneously.
+
+## 3. The Compliance Exposure: A Landlord‑Specific Risk
+
+With MEES (2030/2039) and the reformed Decent Homes Standard (2035), EPC‑C becomes a non‑optional requirement.
+
+For Housing Associations:
+
+- Stock is valued at EUV‑SH
+
+- Non‑compliant homes create covenant exposure
+
+- Batteries do not move EPC bands
+
+- Fabric is the only measure that satisfies Criterion D (Thermal Comfort)
+
+Regulation caps downside risk:
+
+- £10,000/property MEES spend ceiling
+
+The business case for HAs is bill savings + compliance protection, not flexibility income.
+
+## 4. The Operational Reality: Fabric‑First Sequencing
+
+Facilities teams face a sequencing problem:
+
+- Batteries behind leaky walls have no headroom
+
+- Batteries behind insulated walls have three‑quarters of their capacity free
+
+- Peak‑demand reduction creates real headroom for:
+
+-- DNO conversations
+
+-- EV rollout
+
+-- feeder‑level constraints
+
+-- reinforcement avoidance
+
+Two specification notes (not modelled for this archetype):
+
+- External wall insulation likely improves summer comfort vs internal (CIBSE TM59)
+
+- Street‑scale solar risks LV voltage excursions — raise with DNO before phasing
+
+Fabric‑first sequencing is the correct operational order.
+
+## 5. The Market Gap: Who Can Actually Deliver?
+
+Adoption reality:
+
+- Fabric adoption: 27%
+
+- Battery/solar adoption: ~5.8%
+
+Fabric is adopted 4.6× faster because landlords fund fabric and tenants fund batteries.
+
+Tenure fragmentation blocks delivery:
+
+- Ex‑Right‑to‑Buy homes sit outside landlord control
+
+- Street‑level insulation rates vary 0–37%
+
+- The most exposed feeder may look nothing like the estate average
+
+Flexibility exists — but not where you need it.
+
+## 6. The Checked Hypothesis: Fabric‑First Cuts Combined CapEx
+
+A reader proposed a sharper claim: **~40% reduction** in combined battery + heat‑pump CapEx from fabric‑first sequencing.
+
+The project tested it:
+
+- Battery: ~41% lower cost (10 kWh → 5 kWh tier)
+
+- Heat pump: ~29% lower cost (load drops 73%, but minimum size floors limit savings)
+
+- Combined: ~33% lower CapEx (treat as 25–40% range)
+
+Grant caps matter:
+
+- BUS (£7,500) covers most of a right‑sized unit
+
+- Warm Homes SHF Wave 3 has real per‑property caps
+
+- Sequencing implication: bundle heat pump + fabric in the same application before EPC band moves
+
+Directionally right, materially real, and now evidenced.
+
+## 7. The Negawatt: Real, Large, and Undelivered
+Per 1,000 homes retrofitted:
+
+- 7.6 GWh/year displaced heating energy
+
+- ≈£2m/year bill savings
+
+- ≈1,000 tCO₂e/year avoided emissions
+
+- 1.8 MW avoided peak demand
+
+But the negawatt has:
+
+- no meter
+
+- no dispatch signal
+
+- no tender
+
+- no revenue model
+
+The asset with the largest grid value has no commercial pathway.
+
+## Plain‑English Takeaway
+
+Fabric retrofit is:
+
+- cash‑positive
+
+- compliance‑critical
+
+- system‑shaping
+
+- the foundation that makes batteries, heat pumps, EV rollout, and network planning actually work
+
+It is the cheapest, cleanest, and most scalable flexibility resource the UK has — and the market does not yet price it.
