@@ -7,28 +7,34 @@ Posting notes (PROJECT.md Section 11):
   from them -- distinct audience from linkedin_post.md (DNO/grid operator).
 - England-grounded; see the article's Scope section before reusing any
   number here for a different UK nation's housing stock.
-- Keeps the "probably" / "likely" hedged language on the VPP/bill-saving
-  revenue split -- notebooks/05 applies the GBP 1,075/year figure as a flat
-  constant across all three fabric states, so the split is reasoned, not a
-  modelled result. See linkedin_article_bess_vendors.md's own posting notes
-  for the full explanation.
+- UPDATED 17 Aug 2026: the "probably" / "likely" hedge on the VPP/bill-saving
+  split has been resolved. src/check_headroom_revenue_scaling.py (Rung 2 of
+  the VPP-funded-battery ladder, Insulation Biz Case/ADDENDUM.md) actually
+  modelled the split instead of reasoning about it: ~GBP 210/yr dispatch
+  (roughly flat by fabric state) + ~GBP 875/yr arbitrage (scales with
+  spare capacity). Headroom-scaled annual revenue: baseline ~GBP 228,
+  wall-insulation-only ~GBP 368, EPC-C ~GBP 858 -- replacing the flat
+  GBP 1,075/yr figure used when this post was first drafted. Paybacks
+  against the same GBP 13,500 bundled install recomputed and hand-verified
+  17 Aug 2026 (13500/228=59.2, 13500/368=36.7, 13500/858=15.7 years).
+  Still PROVISIONAL/REASONED for the arbitrage-scales-with-headroom
+  mechanism itself (installer-market-guide tier, not a dispatch-log
+  result) -- see ADDENDUM.md for the full evidence tier.
 - Best window: Tuesday, 10am-5pm UK. Post 3 of 3 in a deliberately spaced
   series: negawatt piece led the preceding Tuesday, DNO piece followed
   that Thursday, this piece closes the series today -- each spaced out
   rather than consecutive, so none compete with the last for the same
   followers' attention.
-- Refinement of the author's own prior draft, fact-checked against
-  FINDINGS.md / linkedin_article_bess_vendors.md before saving. Every
-  figure traces cleanly: 98%/26% usable-capacity split (FINDINGS.md's
-  9.84 kWh vs 2.64 kWh of a 10 kWh battery); GBP 1,075/year revenue and
-  ~GBP 13,500 bundled install cost; and the new ~12.6-year payback line,
-  which isn't just correct arithmetic (13,500 / 1,075 = 12.56) but the
-  project's own stated figure (FINDINGS.md: "a genuine 12.6-year simple
-  payback"). No corrections needed, only formatting carried over from the
-  prior version of this file.
+- Title changed by Andy, 17 Aug 2026, from the original hook-first opening
+  line to an explicit headline: "In Social Housing, the Battery Isn't the
+  Flex Asset -- the Fabric Is." Stronger hook; the one thing worth watching
+  if this gets pushback is the shorthand -- fabric doesn't trade on a
+  flexibility market itself, it's what frees the headroom a battery needs
+  to. The body text still makes that mechanism explicit, so the title reads
+  as a fair, punchy compression rather than a separate claim.
 -->
 
-Your battery's real ceiling isn't its power rating — it's the walls around it.
+In Social Housing, the Battery Isn't the Flex Asset — the Fabric Is
 
 In leaky social housing, that same battery is a bill-savings product. In insulated stock, it's a flexibility asset the grid will actually pay for.
 
@@ -39,14 +45,14 @@ Here's what that looks like on a real pre-1919 solid-wall terrace:
 
 Same battery, same install. The difference is what's left over to dispatch, arbitrage, or survive a colder-than-usual night without the tenant overriding the system.
 
-The revenue is real: ~£1,075/year from VPP dispatch + time-of-use arbitrage, against a ~£13,500 bundled install. That's a ~12.6-year payback.
+When I first posted this, the £1,075/year VPP-plus-arbitrage revenue figure was flat — the same number regardless of fabric state — and I flagged the split below as a hunch, not a result. I went back and modelled it.
 
-But here's the catch I can't stop thinking about:
+Split properly: ~£210/year comes from short dispatch events, roughly flat by fabric state. ~£875/year comes from time-of-use arbitrage, which needs headroom to sell. Scaled by how much spare capacity each fabric state actually leaves free: an unretrofitted battery earns ~£228/year, wall-insulation-only ~£368/year, EPC-C ~£858/year.
 
-That revenue isn't evenly distributed. The bill-saving half probably survives in leaky stock — the battery still charges cheap and discharges into the evening load. But the VPP half? That needs headroom. And a battery spending 98% of its capacity on comfort doesn't have headroom to spare.
+Against the same ~£13,500 bundled install, that's not one ~12.6-year payback anymore. It's ~59 years unretrofitted, ~37 years with wall insulation only, ~16 years at EPC-C.
 
-So here's the question I'm sitting with:
+Same hardware. Same install cost. A ~3.8x payback spread, purely from how much headroom the walls leave.
 
-If the same hardware delivers a flexibility asset in insulated homes and a bill-saving product in uninsulated ones... are we overpaying for batteries where they can't flex, and under-valuing fabric where they can?
+So the question isn't hypothetical anymore: are we underwriting VPP revenue against batteries that structurally can't deliver it?
 
 Full physics, notebooks, and the estate-level breakdown in the first comment.
